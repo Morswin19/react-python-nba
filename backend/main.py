@@ -20,12 +20,17 @@ def search_players(name):
 
 @app.route('/api/stats/<int:player_id>', methods=['GET'])
 def get_player_stats_by_id(player_id):
-    # This fetches the actual data using the ID we got from the search
     career = playercareerstats.PlayerCareerStats(player_id=player_id)
+    
+    # 1. Get the DataFrames
     df_seasons = career.get_data_frames()[0]
     df_totals = career.get_data_frames()[1]
     
-    # Get the player name from the ID to send back
+    # 2. IMPORTANT: Replace NaN with 0 (or None)
+    # .fillna(0) turns NaN into 0, which is valid JSON
+    df_seasons = df_seasons.fillna(0)
+    df_totals = df_totals.fillna(0)
+    
     player_info = players.find_player_by_id(player_id)
     
     return jsonify({
