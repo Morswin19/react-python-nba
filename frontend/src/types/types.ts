@@ -9,5 +9,10 @@ export interface SeasonStats {
 export interface PlayerResponse {
   player_name: string;
   stats: SeasonStats[];
-  career_totals: SeasonStats
+  career_totals: SeasonStats;
+}
+
+export interface SearchResponseItem {
+  full_name: string;
+  id: number;
 }
