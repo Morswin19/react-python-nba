@@ -5,6 +5,7 @@ import { PlayerStatsTable } from "./components/playerStatsTable";
 import type { PlayerResponse, SearchResponseItem } from "./types/types";
 import { Header } from "./components/header";
 import { SearchPlayer } from "./components/playerSearch";
+import { TeamMatrix } from "./components/teamMatrix";
 
 function App() {
   const [query, setQuery] = useState("");
@@ -35,6 +36,7 @@ function App() {
           onSelect={handleSelectPlayer}
         />
         {playerData && <PlayerStatsTable playerData={playerData} />}
+        <TeamMatrix />
       </div>
     </div>
   );
