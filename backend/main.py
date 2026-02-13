@@ -16,13 +16,19 @@ def get_player_stats(name):
     player_id = nba_players[0]['id']
     
     career = playercareerstats.PlayerCareerStats(player_id=player_id)
+
+    # Season-by-season stats
     df = career.get_data_frames()[0]
     
-    last_seasons = df.tail(5).to_dict(orient='records')
+    all_seasons = df.to_dict(orient='records')
+
+    # Career Totals stat
+    df_totals = career.get_data_frames()[1]
     
     return jsonify({
         "player_name": nba_players[0]['full_name'],
-        "stats": last_seasons
+        "stats": all_seasons,
+        "career_totals": df_totals.to_dict(orient='records')[0]
     })
 
 if __name__ == '__main__':
