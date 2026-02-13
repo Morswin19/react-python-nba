@@ -7,6 +7,7 @@ export interface SeasonStats {
 }
 
 export interface PlayerResponse {
+  player_id: number;
   player_name: string;
   stats: SeasonStats[];
   career_totals: SeasonStats;
@@ -25,6 +26,7 @@ export interface SelectedCell {
 export interface CellData {
   playerName: string;
   points: number;
+  playerId: number;
 }
 
 export type MatrixStore = Record<string, CellData>;

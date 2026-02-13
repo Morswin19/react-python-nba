@@ -2,10 +2,12 @@ import type { PlayerResponse } from "../types/types";
 
 export const PlayerStatsTable = ({
   playerData,
-  onAddToCell, // New prop
+  onAddToCell,
+  usedInCell,
 }: {
   playerData: PlayerResponse;
   onAddToCell: () => void;
+  usedInCell: string;
 }) => {
   console.log(playerData);
 
@@ -19,7 +21,9 @@ export const PlayerStatsTable = ({
         onClick={onAddToCell}
         className="mb-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
       >
-        Add {playerData.player_name} to selected cell
+        {usedInCell
+          ? `Player used in ${usedInCell} cell`
+          : `Add ${playerData.player_name} to selected cell`}
       </button>{" "}
       <p>Found {playerData.stats.length} seasons of data.</p>
       <table className="w-full text-left border-collapse bg-white">

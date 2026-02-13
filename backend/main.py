@@ -34,6 +34,7 @@ def get_player_stats_by_id(player_id):
     player_info = players.find_player_by_id(player_id)
     
     return jsonify({
+        "player_id": player_id,
         "player_name": player_info['full_name'],
         "stats": df_seasons.to_dict(orient='records'),
         "career_totals": df_totals.to_dict(orient='records')[0]
