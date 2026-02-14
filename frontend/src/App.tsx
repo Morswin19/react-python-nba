@@ -1,69 +1,105 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import "./App.css";
 import { fetchPlayerStats, searchPlayers } from "./services/service";
 import { PlayerStatsTable } from "./components/playerStatsTable";
+import { Header } from "./components/header";
+import { SearchPlayer } from "./components/playerSearch";
+import { TeamMatrix } from "./components/teamMatrix";
 import type {
   MatrixStore,
   PlayerResponse,
   SearchResponseItem,
   SelectedCell,
 } from "./types/types";
-import { Header } from "./components/header";
-import { SearchPlayer } from "./components/playerSearch";
-import { TeamMatrix } from "./components/teamMatrix";
+import { TEAM_HISTORY } from "./consts";
 
 function App() {
+  // --- State ---
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResponseItem[]>([]);
   const [playerData, setPlayerData] = useState<PlayerResponse | null>(null);
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
   const [matrixData, setMatrixData] = useState<MatrixStore>({});
-  const cellValues = Object.values(matrixData);
-  const totalScore = cellValues.reduce((sum, cell) => sum + cell.points, 0);
 
+  // --- Derived State (Score & Validation) ---
+  const totalScore = useMemo(() => {
+    return Object.values(matrixData).reduce(
+      (sum, cell) => sum + cell.points,
+      0,
+    );
+  }, [matrixData]);
+
+  const usedInCell = useMemo(() => {
+    if (!playerData) return undefined;
+    return Object.keys(matrixData).find(
+      (key) => matrixData[key].playerId === playerData.player_id,
+    );
+  }, [matrixData, playerData]);
+
+  // This function calculates if the current player is allowed in the selected cell
+  const getEligibilityError = () => {
+    if (!selectedCell || !playerData) return null;
+    const { row, col } = selectedCell;
+
+    // Get unique list of team abbreviations from player's career
+    const playerTeams = Array.from(
+      new Set(playerData.stats.map((s) => s.TEAM_ABBREVIATION)),
+    );
+
+    const playedForFranchise = (franchiseKey: string) => {
+      const historicalAbbrs = TEAM_HISTORY[franchiseKey] || [franchiseKey];
+      return playerTeams.some((team) => historicalAbbrs.includes(team));
+    };
+
+    // Rule 1: Diagonal (Loyalty check)
+    if (row === col) {
+      const historicalAbbrs = TEAM_HISTORY[row] || [row];
+      const isLoyal = playerTeams.every((team) =>
+        historicalAbbrs.includes(team),
+      );
+      return isLoyal ? null : `Must have played ONLY for the ${row} franchise`;
+    }
+
+    // Rule 2: Matchup (Connection check)
+    const hasRow = playedForFranchise(row);
+    const hasCol = playedForFranchise(col);
+
+    if (!hasRow && !hasCol) return `Never played for ${row} or ${col}`;
+    if (!hasRow) return `Never played for ${row}`;
+    if (!hasCol) return `Never played for ${col}`;
+
+    return null;
+  };
+
+  const eligibilityError = getEligibilityError();
+
+  // --- Handlers ---
   const handleInitialSearch = async () => {
-    setPlayerData(null); // Clear old stats
+    if (!query) return;
+    setPlayerData(null);
     const results = await searchPlayers(query);
     setSearchResults(results);
   };
 
+  const handleSelectPlayer = async (id: number) => {
+    setSearchResults([]);
+    const data = await fetchPlayerStats(id);
+    setPlayerData(data);
+  };
+
   const handleAddToCell = () => {
-    // If no cell is selected or no player data exists, do nothing
     if (!selectedCell || !playerData) {
       alert("Please select a cell in the matrix first!");
       return;
     }
 
-    const { row, col } = selectedCell;
-    const playerTeams = playerData.stats.map((s) => s.TEAM_ABBREVIATION);
-
-    if (row === col) {
-      const playedForOthers = playerTeams.some((team) => team !== row);
-      if (playedForOthers) {
-        alert(
-          `${playerData.player_name} is not eligible for ${row}-${col} because he played for other teams.`,
-        );
-        return;
-      }
-    } else {
-      const playedForRowTeam = playerTeams.includes(row);
-      const playedForColTeam = playerTeams.includes(col);
-
-      if (!playedForRowTeam || !playedForColTeam) {
-        alert(
-          `${playerData.player_name} never played for both ${row} and ${col}!`,
-        );
-        return;
-      }
+    if (eligibilityError) {
+      alert(eligibilityError);
+      return;
     }
 
-    const existingEntry = Object.entries(matrixData).find(
-      ([key, cell]) => cell.playerId === playerData.player_id,
-    );
-
-    if (existingEntry) {
-      const [cellKey] = existingEntry; // This will be something like "LAL-BOS"
-      alert(`${playerData.player_name} is already used in cell: ${cellKey}`);
+    if (usedInCell) {
+      alert(`${playerData.player_name} is already used in cell: ${usedInCell}`);
       return;
     }
 
@@ -79,24 +115,17 @@ function App() {
     }));
   };
 
-  const handleSelectPlayer = async (id: number) => {
-    setSearchResults([]); // Clear the list
-    const data = await fetchPlayerStats(id);
-    setPlayerData(data);
-  };
-
-  const usedInCell = Object.keys(matrixData).find(
-    (key) => matrixData[key].playerId === playerData?.player_id,
-  );
-
   return (
     <div style={{ padding: "40px" }}>
       <div className="max-w-7xl w-[90%] m-auto flex flex-col items-center">
         <Header totalScore={totalScore} />
-        <h2>
-          {selectedCell &&
-            `selected cell: ${selectedCell.row} - ${selectedCell.col}`}
-        </h2>
+
+        <div className="mb-4 h-8 text-blue-900 font-semibold italic">
+          {selectedCell
+            ? `Selected Matchup: ${selectedCell.row} vs ${selectedCell.col}`
+            : "Click a cell in the matrix below to start"}
+        </div>
+
         <SearchPlayer
           query={query}
           setQuery={setQuery}
@@ -104,18 +133,23 @@ function App() {
           onSearch={handleInitialSearch}
           onSelect={handleSelectPlayer}
         />
+
         {playerData && (
           <PlayerStatsTable
             playerData={playerData}
             onAddToCell={handleAddToCell}
             usedInCell={usedInCell}
+            eligibilityError={eligibilityError}
           />
         )}
-        <TeamMatrix
-          selectedCell={selectedCell}
-          onCellClick={(row, col) => setSelectedCell({ row, col })}
-          matrixData={matrixData}
-        />
+
+        <div className="mt-10 w-full">
+          <TeamMatrix
+            selectedCell={selectedCell}
+            onCellClick={(row, col) => setSelectedCell({ row, col })}
+            matrixData={matrixData}
+          />
+        </div>
       </div>
     </div>
   );

@@ -4,12 +4,15 @@ export const PlayerStatsTable = ({
   playerData,
   onAddToCell,
   usedInCell,
+  eligibilityError,
 }: {
   playerData: PlayerResponse;
   onAddToCell: () => void;
-  usedInCell: string;
+  usedInCell: string | undefined;
+  eligibilityError: string | null;
 }) => {
   console.log(playerData);
+  console.log(eligibilityError);
 
   return (
     <div
