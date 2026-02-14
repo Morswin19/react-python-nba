@@ -115,6 +115,17 @@ function App() {
     }));
   };
 
+  const handleRemoveFromCell = (cellKey: string) => {
+    setMatrixData((prev) => {
+      // 1. Create a shallow copy of the existing data
+      const newData = { ...prev };
+      // 2. Remove the specific key
+      delete newData[cellKey];
+      // 3. Return the updated object to trigger a re-render
+      return newData;
+    });
+  };
+
   return (
     <div style={{ padding: "40px" }}>
       <div className="max-w-7xl w-[90%] m-auto flex flex-col items-center">
@@ -148,6 +159,7 @@ function App() {
             selectedCell={selectedCell}
             onCellClick={(row, col) => setSelectedCell({ row, col })}
             matrixData={matrixData}
+            onRemovePlayer={handleRemoveFromCell}
           />
         </div>
       </div>

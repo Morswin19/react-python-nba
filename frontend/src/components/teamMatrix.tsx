@@ -5,12 +5,14 @@ interface TeamMatrixProps {
   selectedCell: { row: string; col: string } | null;
   onCellClick: (row: string, col: string) => void;
   matrixData: MatrixStore;
+  onRemovePlayer: (cellKey: string) => void;
 }
 
 export function TeamMatrix({
   selectedCell,
   onCellClick,
   matrixData,
+  onRemovePlayer,
 }: TeamMatrixProps) {
   return (
     <>
@@ -60,7 +62,16 @@ export function TeamMatrix({
                       >
                         {/* Show different placeholder if it's the diagonal vs empty data */}
                         {cellContent ? (
-                          <div className="flex flex-col animate-in fade-in zoom-in duration-300">
+                          <div className="relative group flex flex-col animate-in fade-in zoom-in duration-300">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevents clicking the cell itself
+                                onRemovePlayer(cellKey);
+                              }}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600"
+                            >
+                              ✕
+                            </button>
                             <span className="font-bold text-blue-900 leading-tight">
                               {cellContent.playerName}
                             </span>
