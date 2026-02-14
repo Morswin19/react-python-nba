@@ -34,6 +34,29 @@ function App() {
       return;
     }
 
+    const { row, col } = selectedCell;
+    const playerTeams = playerData.stats.map((s) => s.TEAM_ABBREVIATION);
+
+    if (row === col) {
+      const playedForOthers = playerTeams.some((team) => team !== row);
+      if (playedForOthers) {
+        alert(
+          `${playerData.player_name} is not eligible for ${row}-${col} because he played for other teams.`,
+        );
+        return;
+      }
+    } else {
+      const playedForRowTeam = playerTeams.includes(row);
+      const playedForColTeam = playerTeams.includes(col);
+
+      if (!playedForRowTeam || !playedForColTeam) {
+        alert(
+          `${playerData.player_name} never played for both ${row} and ${col}!`,
+        );
+        return;
+      }
+    }
+
     const existingEntry = Object.entries(matrixData).find(
       ([key, cell]) => cell.playerId === playerData.player_id,
     );
