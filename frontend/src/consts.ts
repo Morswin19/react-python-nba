@@ -33,7 +33,7 @@ export const NBA_TEAMS = [
 
 export const TEAM_HISTORY: Record<string, string[]> = {
   // PACIFIC DIVISION
-  GSW: ["GSW", "SFW", "PHW"], // Golden State, San Francisco, Philadelphia Warriors
+  GSW: ["GSW", "SFW", "PHW", "GOS"], // Golden State, San Francisco, Philadelphia Warriors
   LAL: ["LAL", "MNL"], // LA, Minneapolis Lakers
   LAC: ["LAC", "SDC", "BUF"], // LA Clippers, San Diego Clippers, Buffalo Braves
   PHX: ["PHX"], // Phoenix Suns

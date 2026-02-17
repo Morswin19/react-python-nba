@@ -1,10 +1,60 @@
-from flask import Flask, jsonify
+import json
+import os
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import playercareerstats
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["http://localhost:5173"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
+DATA_FILE = "matrix_state.json"
+
+def load_data():
+    """Helper to read the JSON file safely."""
+    if not os.path.exists(DATA_FILE):
+        return {} # Return empty if file doesn't exist yet
+    with open(DATA_FILE, "r") as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return {}
+        
+def save_data(data):
+    """Helper to write the dictionary to the JSON file."""
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+@app.route('/api/matrix', methods=['GET'])
+def get_matrix():
+    data = load_data()
+    return jsonify(data)
+
+@app.route('/api/matrix', methods=['POST'])
+def update_matrix():
+    # 1. Load current file state
+    current_state = load_data()
+    
+    # 2. Get the new player entry from React
+    new_entry = request.json # Expecting { "LAL-BOS": { ... } }
+    
+    # 3. Merge and Save
+    current_state.update(new_entry)
+    save_data(current_state)
+    
+    return jsonify({"status": "success", "data": current_state})
+
+# Add a Reset route for the "Clear Board" button
+@app.route('/api/matrix/reset', methods=['POST'])
+def reset_matrix():
+    save_data({})
+    return jsonify({"status": "reset"})
 
 @app.route('/api/search/<name>', methods=['GET'])
 def search_players(name):
@@ -41,4 +91,4 @@ def get_player_stats_by_id(player_id):
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)

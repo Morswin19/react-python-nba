@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import "./App.css";
 import { fetchPlayerStats, searchPlayers } from "./services/service";
 import { PlayerStatsTable } from "./components/playerStatsTable";
@@ -87,7 +87,7 @@ function App() {
     setPlayerData(data);
   };
 
-  const handleAddToCell = () => {
+  const handleAddToCell = async () => {
     if (!selectedCell || !playerData) {
       alert("Please select a cell in the matrix first!");
       return;
@@ -105,14 +105,40 @@ function App() {
 
     const cellKey = `${selectedCell.row}-${selectedCell.col}`;
 
-    setMatrixData((prev) => ({
-      ...prev,
+    const newEntry = {
       [cellKey]: {
         playerName: playerData.player_name,
         points: playerData.career_totals.PTS,
         playerId: playerData.player_id,
       },
-    }));
+    };
+
+    try {
+      // Send to Flask
+      const response = await fetch("http://localhost:5001/api/matrix", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newEntry),
+      });
+
+      if (response.ok) {
+        // Only update local UI if the server saved it successfully
+        setMatrixData((prev) => ({ ...prev, ...newEntry }));
+      }
+    } catch (error) {
+      alert("Server error! Could not save player.");
+    }
+
+    // setMatrixData((prev) => ({
+    //   ...prev,
+    //   [cellKey]: {
+    //     playerName: playerData.player_name,
+    //     points: playerData.career_totals.PTS,
+    //     playerId: playerData.player_id,
+    //   },
+    // }));
   };
 
   const handleRemoveFromCell = (cellKey: string) => {
@@ -125,6 +151,19 @@ function App() {
       return newData;
     });
   };
+
+  useEffect(() => {
+    const syncWithServer = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/api/matrix");
+        const serverData = await response.json();
+        setMatrixData(serverData);
+      } catch (error) {
+        console.error("Error syncing with server:", error);
+      }
+    };
+    syncWithServer();
+  }, []);
 
   return (
     <div style={{ padding: "40px" }}>
