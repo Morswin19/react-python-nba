@@ -71,29 +71,61 @@ def search_players(name):
         })
     return jsonify(results)
 
+# @app.route('/api/stats/<int:player_id>', methods=['GET'])
+# def get_player_stats_by_id(player_id):
+#     career = playercareerstats.PlayerCareerStats(player_id=player_id)
+    
+#     # 1. Get the DataFrames
+#     df_seasons = career.get_data_frames()[0]
+#     df_totals = career.get_data_frames()[1]
+    
+#     # 2. IMPORTANT: Replace NaN with 0 (or None)
+#     # .fillna(0) turns NaN into 0, which is valid JSON
+#     df_seasons = df_seasons.fillna(0)
+#     df_totals = df_totals.fillna(0)
+    
+#     player_info = players.find_player_by_id(player_id)
+    
+#     return jsonify({
+#         "player_id": player_id,
+#         "player_name": player_info['full_name'],
+#         "stats": df_seasons.to_dict(orient='records'),
+#         "career_totals": df_totals.to_dict(orient='records')[0]
+#     })
+
 @app.route('/api/stats/<int:player_id>', methods=['GET'])
 def get_player_stats_by_id(player_id):
-    career = playercareerstats.PlayerCareerStats(player_id=player_id)
-    
-    # 1. Get the DataFrames
-    df_seasons = career.get_data_frames()[0]
-    df_totals = career.get_data_frames()[1]
-    
-    # 2. IMPORTANT: Replace NaN with 0 (or None)
-    # .fillna(0) turns NaN into 0, which is valid JSON
-    df_seasons = df_seasons.fillna(0)
-    df_totals = df_totals.fillna(0)
-    
-    player_info = players.find_player_by_id(player_id)
-    
-    return jsonify({
-        "player_id": player_id,
-        "player_name": player_info['full_name'],
-        "stats": df_seasons.to_dict(orient='records'),
-        "career_totals": df_totals.to_dict(orient='records')[0]
-    })
+    try:
+        # We use .get_dict() to avoid loading the heavy Pandas library into RAM
+        career = playercareerstats.PlayerCareerStats(player_id=player_id).get_dict()
+        
+        # The data structure changes slightly with .get_dict()
+        # It's usually under 'resultSets'
+        stats_data = career['resultSets'][0]['rowSet']
+        headers = career['resultSets'][0]['headers']
+        
+        # Turn it into a list of dictionaries manually (very light on memory)
+        formatted_stats = [dict(zip(headers, row)) for row in stats_data]
+        
+        # Get career totals (usually the second result set)
+        totals_data = career['resultSets'][1]['rowSet'][0]
+        totals_headers = career['resultSets'][1]['headers']
+        career_totals = dict(zip(totals_headers, totals_data))
+
+        player_info = players.find_player_by_id(player_id)
+        
+        return jsonify({
+            "player_id": player_id,
+            "player_name": player_info['full_name'],
+            "stats": formatted_stats,
+            "career_totals": career_totals
+        })
+    except Exception as e:
+        return jsonify({"error": "Memory limit or API issue", "details": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5001))
     debug_mode = os.getenv("FLASK_ENV") == "development"
     app.run(debug=debug_mode, host='0.0.0.0', port=port)
+
+    
