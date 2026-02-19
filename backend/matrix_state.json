@@ -1,0 +1,22 @@
+{
+    "BOS-BOS": {
+        "playerName": "Jayson Tatum",
+        "points": 13784,
+        "playerId": 1628369
+    },
+    "CHA-CHA": {
+        "playerName": "LaMelo Ball",
+        "points": 5726,
+        "playerId": 1630163
+    },
+    "BOS-DAL": {
+        "playerName": "Kristaps Porzi\u0146\u0123is",
+        "points": 10130,
+        "playerId": 204001
+    },
+    "ATL-CLE": {
+        "playerName": "De'Andre Hunter",
+        "points": 5454,
+        "playerId": 1629631
+    }
+}
