@@ -21,6 +21,9 @@ function App() {
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
   const [matrixData, setMatrixData] = useState<MatrixStore>({});
 
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
+
   // --- Derived State (Score & Validation) ---
   const totalScore = useMemo(() => {
     return Object.values(matrixData).reduce(
@@ -115,7 +118,7 @@ function App() {
 
     try {
       // Send to Flask
-      const response = await fetch("http://localhost:5001/api/matrix", {
+      const response = await fetch(`${API_BASE_URL}/matrix`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +158,7 @@ function App() {
   useEffect(() => {
     const syncWithServer = async () => {
       try {
-        const response = await fetch("http://localhost:5001/api/matrix");
+        const response = await fetch(`${API_BASE_URL}/matrix`);
         const serverData = await response.json();
         setMatrixData(serverData);
       } catch (error) {
