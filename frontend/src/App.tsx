@@ -14,7 +14,6 @@ import type {
 import { TEAM_HISTORY } from "./consts";
 
 function App() {
-  // --- State ---
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResponseItem[]>([]);
   const [playerData, setPlayerData] = useState<PlayerResponse | null>(null);
@@ -24,7 +23,6 @@ function App() {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
 
-  // --- Derived State (Score & Validation) ---
   const totalScore = useMemo(() => {
     return Object.values(matrixData).reduce(
       (sum, cell) => sum + cell.points,
@@ -118,6 +116,7 @@ function App() {
 
     try {
       // Send to Flask
+      // const response = await fetch("http://localhost:5001/api/matrix", {
       const response = await fetch(`${API_BASE_URL}/matrix`, {
         method: "POST",
         headers: {
@@ -131,26 +130,15 @@ function App() {
         setMatrixData((prev) => ({ ...prev, ...newEntry }));
       }
     } catch (error) {
+      console.log(error);
       alert("Server error! Could not save player.");
     }
-
-    // setMatrixData((prev) => ({
-    //   ...prev,
-    //   [cellKey]: {
-    //     playerName: playerData.player_name,
-    //     points: playerData.career_totals.PTS,
-    //     playerId: playerData.player_id,
-    //   },
-    // }));
   };
 
   const handleRemoveFromCell = (cellKey: string) => {
     setMatrixData((prev) => {
-      // 1. Create a shallow copy of the existing data
       const newData = { ...prev };
-      // 2. Remove the specific key
       delete newData[cellKey];
-      // 3. Return the updated object to trigger a re-render
       return newData;
     });
   };
