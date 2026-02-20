@@ -4,3 +4,4 @@ python-dotenv
 nba_api
 gunicorn
 pandas
+lxml
