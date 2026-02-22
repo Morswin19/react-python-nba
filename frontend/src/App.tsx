@@ -19,6 +19,8 @@ function App() {
   const [playerData, setPlayerData] = useState<PlayerResponse | null>(null);
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
   const [matrixData, setMatrixData] = useState<MatrixStore>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [statusMessage, setStatusMessage] = useState("Waking up the server...");
 
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
@@ -115,8 +117,6 @@ function App() {
     };
 
     try {
-      // Send to Flask
-      // const response = await fetch("http://localhost:5001/api/matrix", {
       const response = await fetch(`${API_BASE_URL}/matrix`, {
         method: "POST",
         headers: {
@@ -146,11 +146,16 @@ function App() {
   useEffect(() => {
     const syncWithServer = async () => {
       try {
+        setIsLoading(true);
+        setStatusMessage("waiting for matrix data");
         const response = await fetch(`${API_BASE_URL}/matrix`);
         const serverData = await response.json();
         setMatrixData(serverData);
       } catch (error) {
         console.error("Error syncing with server:", error);
+        setStatusMessage("Error loading data. Is the backend online?");
+      } finally {
+        setIsLoading(false);
       }
     };
     syncWithServer();
@@ -185,12 +190,21 @@ function App() {
         )}
 
         <div className="mt-10 w-full">
-          <TeamMatrix
-            selectedCell={selectedCell}
-            onCellClick={(row, col) => setSelectedCell({ row, col })}
-            matrixData={matrixData}
-            onRemovePlayer={handleRemoveFromCell}
-          />
+          {isLoading ? (
+            <div className="grid place-items-center h-20">
+              <div>
+                <span className="text-4xl inline-block animate-spin">🏀</span>
+              </div>
+              <p>{statusMessage}</p>
+            </div>
+          ) : (
+            <TeamMatrix
+              selectedCell={selectedCell}
+              onCellClick={(row, col) => setSelectedCell({ row, col })}
+              matrixData={matrixData}
+              onRemovePlayer={handleRemoveFromCell}
+            />
+          )}
         </div>
       </div>
     </div>
