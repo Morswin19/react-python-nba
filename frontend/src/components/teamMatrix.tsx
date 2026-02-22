@@ -17,12 +17,12 @@ export function TeamMatrix({
   return (
     <>
       <div className="w-full max-w-6xl mx-auto p-4">
-        <div className="overflow-auto border border-gray-300 rounded-lg shadow-sm max-h-[700px]">
+        <div className="overflow-auto border border-gray-300 rounded-lg shadow-sm max-h-175">
           <table className="border-collapse bg-white text-sm">
             <thead>
               <tr>
                 {/* Top-left corner cell is empty and sticky */}
-                <th className="sticky top-0 left-0 z-30 bg-gray-100 border-b-2 border-r-2 border-gray-300 p-2 min-w-[60px]">
+                <th className="sticky top-0 left-0 z-30 bg-gray-100 border-b-2 border-r-2 border-gray-300 p-2 min-w-15">
                   TEAM
                 </th>
                 {/* Horizontal Header (Columns) */}

@@ -1,5 +1,6 @@
 import json
 import os
+import gc
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -31,6 +32,13 @@ def load_data():
         
 def save_data(data):
     """Helper to write the dictionary to the JSON file."""
+    # 1. Get the directory path from the DATA_FILE string
+    dir_name = os.path.dirname(DATA_FILE)
+    # 2. Create the directory if it doesn't exist
+    if dir_name and not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+        print(f"Created directory: {dir_name}")
+
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
@@ -86,12 +94,24 @@ def get_player_stats_by_id(player_id):
     
     player_info = players.find_player_by_id(player_id)
     
-    return jsonify({
+    response = jsonify({
         "player_id": player_id,
         "player_name": player_info['full_name'],
         "stats": df_seasons.to_dict(orient='records'),
         "career_totals": df_totals.to_dict(orient='records')[0]
     })
+
+    # 3. CLEANUP: Delete the heavy objects to free up RAM
+    # This removes the "references" so gc.collect() can find them
+    del df_seasons
+    del df_totals
+    del career
+    
+    # 4. Trigger the garbage collector
+    gc.collect() 
+
+    # 5. NOW return the response
+    return response
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5001))
