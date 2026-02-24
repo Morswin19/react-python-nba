@@ -1,21 +1,10 @@
 import json
 import os
-import gc
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import playercareerstats
-
-NBA_HEADERS = {
-    'Host': 'stats.nba.com',
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Referer': 'https://www.nba.com/',
-    'Origin': 'https://www.nba.com',
-    'Connection': 'keep-alive',
-}
 
 # 2. Load the variables from .env
 load_dotenv()
@@ -42,9 +31,7 @@ def load_data():
         
 def save_data(data):
     """Helper to write the dictionary to the JSON file."""
-    # 1. Get the directory path from the DATA_FILE string
     dir_name = os.path.dirname(DATA_FILE)
-    # 2. Create the directory if it doesn't exist
     if dir_name and not os.path.exists(dir_name):
         os.makedirs(dir_name)
         print(f"Created directory: {dir_name}")
@@ -93,7 +80,6 @@ def search_players(name):
 def get_player_stats_by_id(player_id):
     career = playercareerstats.PlayerCareerStats(
         player_id=player_id, 
-        headers=NBA_HEADERS, 
         timeout=30
     )
     
@@ -115,16 +101,6 @@ def get_player_stats_by_id(player_id):
         "career_totals": df_totals.to_dict(orient='records')[0]
     })
 
-    # 3. CLEANUP: Delete the heavy objects to free up RAM
-    # This removes the "references" so gc.collect() can find them
-    del df_seasons
-    del df_totals
-    del career
-    
-    # 4. Trigger the garbage collector
-    gc.collect() 
-
-    # 5. NOW return the response
     return response
 
 if __name__ == '__main__':
