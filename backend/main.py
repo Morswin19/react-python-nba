@@ -5,11 +5,26 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import playercareerstats
+from flask_sqlalchemy import SQLAlchemy
 
 # 2. Load the variables from .env
 load_dotenv()
 
 app = Flask(__name__)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+class MatrixState(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # Przechowamy całą macierz jako jeden obiekt JSON w jednej komórce bazy danych
+    data = db.Column(db.JSON, nullable=False)
+
+with app.app_context():
+    db.create_all()
+
 CORS(app, resources={
     r"/api/*": {
         "origins": [os.getenv("ALLOWED_ORIGIN", "http://localhost:5173")],        
@@ -20,24 +35,18 @@ CORS(app, resources={
 DATA_FILE = os.getenv("DATA_FILE", "matrix_state.json")
 
 def load_data():
-    """Helper to read the JSON file safely."""
-    if not os.path.exists(DATA_FILE):
-        return {} # Return empty if file doesn't exist yet
-    with open(DATA_FILE, "r") as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError:
-            return {}
+    # Pobieramy pierwszy (i jedyny) rekord z bazy
+    state = MatrixState.query.first()
+    return state.data if state else {}
         
-def save_data(data):
-    """Helper to write the dictionary to the JSON file."""
-    dir_name = os.path.dirname(DATA_FILE)
-    if dir_name and not os.path.exists(dir_name):
-        os.makedirs(dir_name)
-        print(f"Created directory: {dir_name}")
-
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=4)
+def save_data(data_dict):
+    state = MatrixState.query.first()
+    if state:
+        state.data = data_dict # Aktualizujemy istniejący rekord
+    else:
+        new_state = MatrixState(data=data_dict) # Tworzymy pierwszy rekord
+        db.session.add(new_state)
+    db.session.commit()
 
 @app.route('/api/matrix', methods=['GET'])
 def get_matrix():
