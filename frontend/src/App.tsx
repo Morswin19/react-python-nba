@@ -177,50 +177,48 @@ function App() {
   }, []);
 
   return (
-    <div style={{ padding: "40px" }}>
-      <div className="max-w-7xl w-[90%] m-auto flex flex-col items-center">
-        <Header totalScore={totalScore} />
+    <div className="max-w-7xl w-[95%] m-auto flex flex-col items-center py-4">
+      <Header totalScore={totalScore} />
 
-        <div className="mb-4 h-8 text-blue-900 font-semibold italic">
-          {selectedCell
-            ? `Selected Matchup: ${selectedCell.row} vs ${selectedCell.col}`
-            : "Click a cell in the matrix below to start"}
-        </div>
+      <div className="mb-4 h-8 text-blue-900 font-semibold italic">
+        {selectedCell
+          ? `Selected Matchup: ${selectedCell.row} vs ${selectedCell.col}`
+          : "Click a cell in the matrix below to start"}
+      </div>
 
-        <SearchPlayer
-          query={query}
-          setQuery={setQuery}
-          searchResults={searchResults}
-          onSearch={handleInitialSearch}
-          onSelect={handleSelectPlayer}
+      <SearchPlayer
+        query={query}
+        setQuery={setQuery}
+        searchResults={searchResults}
+        onSearch={handleInitialSearch}
+        onSelect={handleSelectPlayer}
+      />
+
+      {playerData && (
+        <PlayerStatsTable
+          playerData={playerData}
+          onAddToCell={handleAddToCell}
+          usedInCell={usedInCell}
+          eligibilityError={eligibilityError}
         />
+      )}
 
-        {playerData && (
-          <PlayerStatsTable
-            playerData={playerData}
-            onAddToCell={handleAddToCell}
-            usedInCell={usedInCell}
-            eligibilityError={eligibilityError}
+      <div className="mt-4 md:mt-10 w-full">
+        {isLoading ? (
+          <div className="grid place-items-center h-20">
+            <div>
+              <span className="text-4xl inline-block animate-spin">🏀</span>
+            </div>
+            <p>{statusMessage}</p>
+          </div>
+        ) : (
+          <TeamMatrix
+            selectedCell={selectedCell}
+            onCellClick={(row, col) => setSelectedCell({ row, col })}
+            matrixData={matrixData}
+            onRemovePlayer={handleRemoveFromCell}
           />
         )}
-
-        <div className="mt-10 w-full">
-          {isLoading ? (
-            <div className="grid place-items-center h-20">
-              <div>
-                <span className="text-4xl inline-block animate-spin">🏀</span>
-              </div>
-              <p>{statusMessage}</p>
-            </div>
-          ) : (
-            <TeamMatrix
-              selectedCell={selectedCell}
-              onCellClick={(row, col) => setSelectedCell({ row, col })}
-              matrixData={matrixData}
-              onRemovePlayer={handleRemoveFromCell}
-            />
-          )}
-        </div>
       </div>
     </div>
   );
