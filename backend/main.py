@@ -28,7 +28,7 @@ with app.app_context():
 CORS(app, resources={
     r"/api/*": {
         "origins": [os.getenv("ALLOWED_ORIGIN", "http://localhost:5173")],        
-        "methods": ["GET", "POST", "OPTIONS"],
+        "methods": ["GET", "POST", "OPTIONS", "DELETE"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
@@ -54,18 +54,21 @@ def get_matrix():
     return jsonify(data)
 
 @app.route('/api/matrix', methods=['POST'])
-def update_matrix():
-    # 1. Load current file state
+def add_player_to_matrix():
     current_state = load_data()
-    
-    # 2. Get the new player entry from React
     new_entry = request.json # Expecting { "LAL-BOS": { ... } }
-    
-    # 3. Merge and Save
     current_state.update(new_entry)
     save_data(current_state)
-    
     return jsonify({"status": "success", "data": current_state})
+
+@app.route('/api/matrix/remove/<cell_key>', methods=['DELETE'])
+def remove_player_from_matrix(cell_key):
+    current_state = load_data()
+    if cell_key in current_state:
+        del current_state[cell_key]
+        save_data(current_state)
+        return jsonify({"status": "success", "data": current_state})
+    return jsonify({"error": "Cell not found"}), 404
 
 # Add a Reset route for the "Clear Board" button
 @app.route('/api/matrix/reset', methods=['POST'])
