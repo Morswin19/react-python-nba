@@ -36,7 +36,7 @@ export const TEAM_HISTORY: Record<string, string[]> = {
   GSW: ["GSW", "SFW", "PHW", "GOS"], // Golden State, San Francisco, Philadelphia Warriors
   LAL: ["LAL", "MNL"], // LA, Minneapolis Lakers
   LAC: ["LAC", "SDC", "BUF"], // LA Clippers, San Diego Clippers, Buffalo Braves
-  PHX: ["PHX"], // Phoenix Suns
+  PHX: ["PHX", "PHO"], // Phoenix Suns
   SAC: ["SAC", "KCK", "KCO", "CIN", "ROC"], // Kings, KC, Cincinnati, Rochester
 
   // NORTHWEST DIVISION
@@ -57,7 +57,7 @@ export const TEAM_HISTORY: Record<string, string[]> = {
   BOS: ["BOS"], // Boston Celtics
   BKN: ["BKN", "NJN", "NYN", "NYA"], // Brooklyn, New Jersey, NY Nets, NY Americans
   NYK: ["NYK"], // New York Knicks
-  PHI: ["PHI", "SYR"], // Philadelphia 76ers, Syracuse Nationals
+  PHI: ["PHI", "SYR", "PHL"], // Philadelphia 76ers, Syracuse Nationals
   TOR: ["TOR"], // Toronto Raptors
 
   // CENTRAL DIVISION
