@@ -135,12 +135,27 @@ function App() {
     }
   };
 
-  const handleRemoveFromCell = (cellKey: string) => {
-    setMatrixData((prev) => {
-      const newData = { ...prev };
-      delete newData[cellKey];
-      return newData;
-    });
+  const handleRemoveFromCell = async (cellKey: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/matrix/remove/${cellKey}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setMatrixData((prev) => {
+          const newData = { ...prev };
+          delete newData[cellKey];
+          return newData;
+        });
+        console.log(`Deleted player from cell: ${cellKey}`);
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Connection error:", error);
+      alert("Could not connect to the server to delete the player.");
+    }
   };
 
   useEffect(() => {
