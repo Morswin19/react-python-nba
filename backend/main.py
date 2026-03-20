@@ -19,7 +19,6 @@ db = SQLAlchemy(app)
 
 class MatrixState(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # Przechowamy całą macierz jako jeden obiekt JSON w jednej komórce bazy danych
     data = db.Column(db.JSON, nullable=False)
 
 with app.app_context():
@@ -35,16 +34,15 @@ CORS(app, resources={
 DATA_FILE = os.getenv("DATA_FILE", "matrix_state.json")
 
 def load_data():
-    # Pobieramy pierwszy (i jedyny) rekord z bazy
     state = MatrixState.query.first()
     return state.data if state else {}
         
 def save_data(data_dict):
     state = MatrixState.query.first()
     if state:
-        state.data = data_dict # Aktualizujemy istniejący rekord
+        state.data = data_dict
     else:
-        new_state = MatrixState(data=data_dict) # Tworzymy pierwszy rekord
+        new_state = MatrixState(data=data_dict)
         db.session.add(new_state)
     db.session.commit()
 
