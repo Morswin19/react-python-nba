@@ -26,7 +26,7 @@ export function SearchPlayer({
           className="border p-2 rounded w-full max-w-75"
         />
         <button
-          className="bg-blue-900 text-white px-10 rounded-md transition-hover hover:bg-blue-800"
+          className="bg-blue-900 text-white px-10 rounded-md transition-hover hover:bg-blue-800 cursor-pointer"
           onClick={onSearch}
         >
           Search

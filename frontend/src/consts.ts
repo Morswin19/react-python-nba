@@ -44,14 +44,14 @@ export const TEAM_HISTORY: Record<string, string[]> = {
   MIN: ["MIN"], // Minnesota Timberwolves
   OKC: ["OKC", "SEA"], // Oklahoma City Thunder, Seattle SuperSonics
   POR: ["POR"], // Portland Trail Blazers
-  UTA: ["UTA", "NOJ"], // Utah, New Orleans Jazz
+  UTA: ["UTA", "NOJ", "UTH"], // Utah, New Orleans Jazz
 
   // SOUTHWEST DIVISION
   DAL: ["DAL"], // Dallas Mavericks
   HOU: ["HOU", "SDR"], // Houston, San Diego Rockets
   MEM: ["MEM", "VAN"], // Memphis, Vancouver Grizzlies
   NOP: ["NOP", "NOH", "NOK"], // Pelicans, NO Hornets, NO/OKC Hornets, Original Charlotte Hornets
-  SAS: ["SAS", "DLC", "TEX"], // Spurs, Dallas Chaparrals, Texas Chaparrals
+  SAS: ["SAS", "DLC", "TEX", "SAN"], // Spurs, Dallas Chaparrals, Texas Chaparrals
 
   // ATLANTIC DIVISION
   BOS: ["BOS"], // Boston Celtics
@@ -72,5 +72,5 @@ export const TEAM_HISTORY: Record<string, string[]> = {
   CHA: ["CHA", "CHB", "CHH"], // Charlotte Hornets (Bobcats years often coded as CHA/CHB)
   MIA: ["MIA"], // Miami Heat
   ORL: ["ORL"], // Orlando Magic
-  WAS: ["WAS", "WSB", "CAP", "BAL", "CHZ", "CHP"], // Wizards, Bullets, Capital, Baltimore, Zephyrs, Packers
+  WAS: ["WAS", "WSB", "CAP", "BAL", "CHZ", "CHP", "BLT"], // Wizards, Bullets, Capital, Baltimore, Zephyrs, Packers
 };

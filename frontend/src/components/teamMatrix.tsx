@@ -1,11 +1,12 @@
 import { NBA_TEAMS } from "../consts";
-import type { MatrixStore } from "../types/types";
+import type { MatrixStore, MatrixTab } from "../types/types";
 
 interface TeamMatrixProps {
   selectedCell: { row: string; col: string } | null;
   onCellClick: (row: string, col: string) => void;
   matrixData: MatrixStore;
   onRemovePlayer: (cellKey: string) => void;
+  activeTab: MatrixTab;
 }
 
 export function TeamMatrix({
@@ -13,6 +14,7 @@ export function TeamMatrix({
   onCellClick,
   matrixData,
   onRemovePlayer,
+  activeTab,
 }: TeamMatrixProps) {
   return (
     <div className="w-full">
@@ -75,7 +77,11 @@ export function TeamMatrix({
                             {cellContent.playerName}
                           </span>
                           <span className="text-xs md:text-sm text-gray-500">
-                            {cellContent.points} PTS
+                            {activeTab === "career"
+                              ? `${cellContent.points} PTS`
+                              : cellContent.teamPoints !== undefined
+                                ? `${cellContent.teamPoints} PTS`
+                                : "— PTS"}
                           </span>
                         </div>
                       ) : (

@@ -26,7 +26,10 @@ export interface SelectedCell {
 export interface CellData {
   playerName: string;
   points: number;
+  teamPoints?: number;
   playerId: number;
 }
+
+export type MatrixTab = "career" | "team";
 
 export type MatrixStore = Record<string, CellData>;
