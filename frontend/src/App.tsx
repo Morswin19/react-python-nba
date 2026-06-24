@@ -7,6 +7,7 @@ import { SearchPlayer } from "./components/playerSearch";
 import { TeamMatrix } from "./components/teamMatrix";
 import type {
   MatrixStore,
+  MatrixTab,
   PlayerResponse,
   SearchResponseItem,
   SelectedCell,
@@ -21,13 +22,21 @@ function App() {
   const [matrixData, setMatrixData] = useState<MatrixStore>({});
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("Waking up the server...");
+  const [activeTab, setActiveTab] = useState<MatrixTab>("career");
 
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
 
-  const totalScore = useMemo(() => {
+  const careerTotal = useMemo(() => {
     return Object.values(matrixData).reduce(
       (sum, cell) => sum + cell.points,
+      0,
+    );
+  }, [matrixData]);
+
+  const teamTotal = useMemo(() => {
+    return Object.values(matrixData).reduce(
+      (sum, cell) => sum + (cell.teamPoints ?? 0),
       0,
     );
   }, [matrixData]);
@@ -108,10 +117,22 @@ function App() {
 
     const cellKey = `${selectedCell.row}-${selectedCell.col}`;
 
+    const { row, col } = selectedCell;
+    const matchingAbbrs = new Set([
+      ...(TEAM_HISTORY[row] || [row]),
+      ...(TEAM_HISTORY[col] || [col]),
+    ]);
+    const teamPoints = playerData.stats.reduce(
+      (sum, season) =>
+        matchingAbbrs.has(season.TEAM_ABBREVIATION) ? sum + season.PTS : sum,
+      0,
+    );
+
     const newEntry = {
       [cellKey]: {
         playerName: playerData.player_name,
         points: playerData.career_totals.PTS,
+        teamPoints,
         playerId: playerData.player_id,
       },
     };
@@ -178,7 +199,7 @@ function App() {
 
   return (
     <div className="max-w-7xl w-[95%] m-auto flex flex-col items-center py-4">
-      <Header totalScore={totalScore} />
+      <Header careerTotal={careerTotal} teamTotal={teamTotal} />
 
       <div className="mb-4 h-8 text-blue-900 font-semibold italic">
         {selectedCell
@@ -212,12 +233,41 @@ function App() {
             <p>{statusMessage}</p>
           </div>
         ) : (
-          <TeamMatrix
-            selectedCell={selectedCell}
-            onCellClick={(row, col) => setSelectedCell({ row, col })}
-            matrixData={matrixData}
-            onRemovePlayer={handleRemoveFromCell}
-          />
+          <>
+            <div className="mb-3 flex gap-2" role="tablist">
+              <button
+                role="tab"
+                aria-selected={activeTab === "career"}
+                onClick={() => setActiveTab("career")}
+                className={`px-4 py-2 rounded-t-lg font-semibold text-sm transition-colors ${
+                  activeTab === "career"
+                    ? "bg-blue-900 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Career Points
+              </button>
+              <button
+                role="tab"
+                aria-selected={activeTab === "team"}
+                onClick={() => setActiveTab("team")}
+                className={`px-4 py-2 rounded-t-lg font-semibold text-sm transition-colors ${
+                  activeTab === "team"
+                    ? "bg-blue-900 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Team Points
+              </button>
+            </div>
+            <TeamMatrix
+              selectedCell={selectedCell}
+              onCellClick={(row, col) => setSelectedCell({ row, col })}
+              matrixData={matrixData}
+              onRemovePlayer={handleRemoveFromCell}
+              activeTab={activeTab}
+            />
+          </>
         )}
       </div>
     </div>
