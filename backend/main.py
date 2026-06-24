@@ -46,6 +46,10 @@ def save_data(data_dict):
         db.session.add(new_state)
     db.session.commit()
 
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({"status": "ok"}), 200
+
 @app.route('/api/matrix', methods=['GET'])
 def get_matrix():
     data = load_data()
