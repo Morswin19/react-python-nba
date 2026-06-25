@@ -28,6 +28,9 @@ export function SearchPlayer({
         <button
           className="bg-blue-900 text-white px-10 rounded-md transition-hover hover:bg-blue-800 cursor-pointer"
           onClick={onSearch}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onSearch();
+          }}
         >
           Search
         </button>

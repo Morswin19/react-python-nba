@@ -18,7 +18,7 @@ export function TeamMatrix({
 }: TeamMatrixProps) {
   return (
     <div className="w-full">
-      <div className="overflow-auto border border-gray-300 rounded-lg shadow-sm max-h-175">
+      <div className="overflow-auto border border-gray-300 rounded-lg rounded-tl-none shadow-sm max-h-175">
         <table className="border-collapse bg-white text-sm">
           <thead>
             <tr>

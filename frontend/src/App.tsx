@@ -201,9 +201,9 @@ function App() {
     <div className="max-w-7xl w-[95%] m-auto flex flex-col items-center py-4">
       <Header careerTotal={careerTotal} teamTotal={teamTotal} />
 
-      <div className="mb-4 h-8 text-blue-900 font-semibold italic">
+      <div className="my-2 h-8 text-blue-900 font-semibold italic">
         {selectedCell
-          ? `Selected Matchup: ${selectedCell.row} vs ${selectedCell.col}`
+          ? `Selected Teams: ${selectedCell.row} and ${selectedCell.col}`
           : "Click a cell in the matrix below to start"}
       </div>
 
@@ -234,7 +234,7 @@ function App() {
           </div>
         ) : (
           <>
-            <div className="mb-3 flex gap-2" role="tablist">
+            <div className="flex gap-2" role="tablist">
               <button
                 role="tab"
                 aria-selected={activeTab === "career"}
