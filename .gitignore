@@ -11,3 +11,6 @@ frontend/dist/
 .DS_Store
 .env
 .vscode/
+
+# unnecesary images
+full/
