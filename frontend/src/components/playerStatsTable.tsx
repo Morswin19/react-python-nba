@@ -1,15 +1,17 @@
-import type { PlayerResponse } from "../types/types";
+import type { PlayerResponse, SelectedCell } from "../types/types";
 
 export const PlayerStatsTable = ({
   playerData,
   onAddToCell,
   usedInCell,
   eligibilityError,
+  selectedCell,
 }: {
   playerData: PlayerResponse;
   onAddToCell: () => void;
   usedInCell: string | undefined;
   eligibilityError: string | null;
+  selectedCell: SelectedCell | null;
 }) => {
   console.log(playerData);
   console.log(eligibilityError);
@@ -26,6 +28,8 @@ export const PlayerStatsTable = ({
       >
         {usedInCell
           ? `Player used in ${usedInCell} cell`
+          : selectedCell
+          ? `Add ${playerData.player_name} to ${selectedCell.row} and ${selectedCell.col}`
           : `Add ${playerData.player_name} to selected cell`}
       </button>{" "}
       <p>Found {playerData.stats.length} seasons of data.</p>

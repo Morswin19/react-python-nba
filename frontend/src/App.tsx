@@ -5,6 +5,7 @@ import { PlayerStatsTable } from "./components/playerStatsTable";
 import { Header } from "./components/header";
 import { SearchPlayer } from "./components/playerSearch";
 import { TeamMatrix } from "./components/teamMatrix";
+import { TeamLogo } from "./components/teamLogo";
 import type {
   MatrixStore,
   MatrixTab,
@@ -201,10 +202,17 @@ function App() {
     <div className="max-w-7xl w-[95%] m-auto flex flex-col items-center py-4">
       <Header careerTotal={careerTotal} teamTotal={teamTotal} />
 
-      <div className="mb-4 h-8 text-blue-900 font-semibold italic">
-        {selectedCell
-          ? `Selected Matchup: ${selectedCell.row} vs ${selectedCell.col}`
-          : "Click a cell in the matrix below to start"}
+      <div className="my-2 h-8 text-blue-900 font-semibold italic flex items-center gap-2">
+        {selectedCell ? (
+          <>
+            <span>Selected Teams:</span>
+            <TeamLogo abbr={selectedCell.row} />
+            <span>and</span>
+            <TeamLogo abbr={selectedCell.col} />
+          </>
+        ) : (
+          "Click a cell in the matrix below to start"
+        )}
       </div>
 
       <SearchPlayer
@@ -221,6 +229,7 @@ function App() {
           onAddToCell={handleAddToCell}
           usedInCell={usedInCell}
           eligibilityError={eligibilityError}
+          selectedCell={selectedCell}
         />
       )}
 
@@ -234,7 +243,7 @@ function App() {
           </div>
         ) : (
           <>
-            <div className="mb-3 flex gap-2" role="tablist">
+            <div className="flex gap-2" role="tablist">
               <button
                 role="tab"
                 aria-selected={activeTab === "career"}
