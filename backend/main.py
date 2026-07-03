@@ -21,6 +21,10 @@ class MatrixState(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     data = db.Column(db.JSON, nullable=False)
 
+class PlayerStats(db.Model):
+    player_id = db.Column(db.Integer, primary_key=True)
+    data = db.Column(db.JSON, nullable=False)
+
 with app.app_context():
     db.create_all()
 
@@ -90,32 +94,42 @@ def search_players(name):
         })
     return jsonify(results)
 
+def fetch_stats_from_nba(player_id):
+    """Live call to stats.nba.com. Works only where NBA isn't IP-blocked
+    (your laptop) — NOT from render's datacenter IP. Builds the exact
+    payload the frontend expects."""
+    career = playercareerstats.PlayerCareerStats(player_id=player_id, timeout=30)
+
+    df_seasons = career.get_data_frames()[0].fillna(0)
+    df_totals = career.get_data_frames()[1].fillna(0)
+
+    player_info = players.find_player_by_id(player_id)
+    totals = df_totals.to_dict(orient='records')
+    return {
+        "player_id": player_id,
+        "player_name": player_info['full_name'] if player_info else None,
+        "stats": df_seasons.to_dict(orient='records'),
+        "career_totals": totals[0] if totals else {}
+    }
+
 @app.route('/api/stats/<int:player_id>', methods=['GET'])
 def get_player_stats_by_id(player_id):
-    career = playercareerstats.PlayerCareerStats(
-        player_id=player_id, 
-        timeout=30
-    )
-    
-    # 1. Get the DataFrames
-    df_seasons = career.get_data_frames()[0]
-    df_totals = career.get_data_frames()[1]
-    
-    # 2. IMPORTANT: Replace NaN with 0 (or None)
-    # .fillna(0) turns NaN into 0, which is valid JSON
-    df_seasons = df_seasons.fillna(0)
-    df_totals = df_totals.fillna(0)
-    
-    player_info = players.find_player_by_id(player_id)
-    
-    response = jsonify({
-        "player_id": player_id,
-        "player_name": player_info['full_name'],
-        "stats": df_seasons.to_dict(orient='records'),
-        "career_totals": df_totals.to_dict(orient='records')[0]
-    })
+    # 1. Serve from DB cache (this is the path render always uses)
+    row = db.session.get(PlayerStats, player_id)
+    if row:
+        return jsonify(row.data)
 
-    return response
+    # 2. Cache miss -> try live NBA. Succeeds locally, fails on render (IP block).
+    try:
+        payload = fetch_stats_from_nba(player_id)
+    except Exception as e:
+        app.logger.exception("stats failed for %s", player_id)
+        return jsonify({"error": type(e).__name__, "detail": str(e)}), 502
+
+    # 3. Self-heal: store what we just fetched so next read is a DB hit.
+    db.session.add(PlayerStats(player_id=player_id, data=payload))
+    db.session.commit()
+    return jsonify(payload)
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5001))
