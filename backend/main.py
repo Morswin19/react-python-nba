@@ -35,8 +35,6 @@ CORS(app, resources={
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
-DATA_FILE = os.getenv("DATA_FILE", "matrix_state.json")
-
 def load_data():
     state = MatrixState.query.first()
     return state.data if state else {}
